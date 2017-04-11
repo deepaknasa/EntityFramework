@@ -27,15 +27,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
         public virtual IEntityFinder Create(DbContext context, Type type)
             => _cache.GetOrAdd(
                 type,
-                t =>
-                    {
-                        if (context.Model.FindEntityType(t) == null)
-                        {
-                            throw new InvalidOperationException(CoreStrings.InvalidSetType(t.ShortDisplayName()));
-                        }
-
-                        return (Func<DbContext, IEntityFinder>)_genericCreate.MakeGenericMethod(t).Invoke(null, null);
-                    })(context);
+                t => (Func<DbContext, IEntityFinder>)_genericCreate.MakeGenericMethod(t).Invoke(null, null))(context);
 
         [UsedImplicitly]
         private static Func<DbContext, IEntityFinder> CreateConstructor<TEntity>() where TEntity : class

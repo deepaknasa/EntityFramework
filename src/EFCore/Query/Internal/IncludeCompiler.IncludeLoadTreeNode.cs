@@ -130,10 +130,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                 var stateManagerProperty
                     = Expression.Property(
-                        Expression.Property(
-                            EntityQueryModelVisitor.QueryContextParameter,
-                            nameof(QueryContext.StateManager)),
-                        nameof(Lazy<object>.Value));
+                        EntityQueryModelVisitor.QueryContextParameter,
+                        nameof(QueryContext.StateManager));
 
                 var blockExpressions = new List<Expression>();
 

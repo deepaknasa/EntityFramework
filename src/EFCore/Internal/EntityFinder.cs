@@ -35,7 +35,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
         public EntityFinder([NotNull] DbContext context)
         {
             _model = context.Model;
-            _stateManager = context.GetService<IStateManager>();
+            _stateManager = context.GetInfrastructure<IStateManager>();
             _set = context.Set<TEntity>();
         }
 

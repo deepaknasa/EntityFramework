@@ -31,8 +31,6 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
     {
         private static readonly int _maxEntityState = Enum.GetValues(typeof(EntityState)).Cast<int>().Max();
 
-        private IEntityFinderSource _entityFinderSource;
-
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -357,8 +355,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
         }
 
         private IEntityFinder Finder
-            => (_entityFinderSource
-                ?? (_entityFinderSource = InternalEntry.StateManager.Context.GetService<IEntityFinderSource>()))
+            => InternalEntry.StateManager.Context.GetInfrastructure<IEntityFinderSource>()
                 .Create(InternalEntry.StateManager.Context, InternalEntry.EntityType.ClrType);
     }
 }

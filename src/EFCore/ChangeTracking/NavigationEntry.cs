@@ -28,8 +28,6 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
     /// </summary>
     public abstract class NavigationEntry : MemberEntry
     {
-        private IEntityFinderSource _entityFinderSource;
-
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -171,8 +169,7 @@ namespace Microsoft.EntityFrameworkCore.ChangeTracking
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         protected virtual IEntityFinder Finder([NotNull] Type entityType)
-            => (_entityFinderSource
-                ?? (_entityFinderSource = InternalEntry.StateManager.Context.GetService<IEntityFinderSource>()))
+            => InternalEntry.StateManager.Context.GetInfrastructure<IEntityFinderSource>()
                 .Create(InternalEntry.StateManager.Context, entityType);
 
         /// <summary>

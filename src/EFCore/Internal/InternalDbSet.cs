@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,7 +61,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 throw new InvalidOperationException(CoreStrings.InvalidSetType(typeof(TEntity).ShortDisplayName()));
             }
 
-            return new EntityQueryable<TEntity>(_context.QueryProvider);
+            return new EntityQueryable<TEntity>(_context.GetInfrastructure<IAsyncQueryProvider>());
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
 
         IQueryProvider IQueryable.Provider => EntityQueryable.Provider;
 
-        IServiceProvider IInfrastructure<IServiceProvider>.Instance 
-            => ((IInfrastructure<IServiceProvider>)_context).Instance;
+        IServiceProvider IInfrastructure<IServiceProvider>.Instance
+            => _context.GetInfrastructure<IServiceProvider>();
     }
 }

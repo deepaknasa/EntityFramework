@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Microsoft.EntityFrameworkCore.Query
@@ -53,9 +54,6 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(concurrencyDetector, nameof(concurrencyDetector));
 
             CurrentDbContext = currentContext;
-            StateManager = new LazyRef<IStateManager>(() => currentContext.Context.GetService<IStateManager>());
-            ChangeDetector = new LazyRef<IChangeDetector>(() => currentContext.Context.GetService<IChangeDetector>());
-
             ConcurrencyDetector = concurrencyDetector;
         }
 
@@ -67,12 +65,12 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <summary>
         ///     Gets the change detector.
         /// </summary>
-        public LazyRef<IChangeDetector> ChangeDetector { get; }
+        public IChangeDetector ChangeDetector => CurrentDbContext.Context.GetInfrastructure<IChangeDetector>();
 
         /// <summary>
         ///     Gets the state manager.
         /// </summary>
-        public LazyRef<IStateManager> StateManager { get; }
+        public IStateManager StateManager => CurrentDbContext.Context.GetInfrastructure<IStateManager>();
 
         /// <summary>
         ///     Gets the concurrency detector.
