@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
@@ -237,11 +238,14 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
             if (referencedQuerySource != null)
             {
-                var parentQuerySource =
-                    (parentQueryModel.SelectClause.Selector as QuerySourceReferenceExpression)
-                    ?.ReferencedQuerySource;
+                var parentQuerySource = (parentQueryModel.SelectClause.Selector as QuerySourceReferenceExpression)?.ReferencedQuerySource;
 
-                if (referencedQuerySource.ItemType == parentQuerySource?.ItemType)
+                var parentQueryModelResultType
+                    = parentQueryModel.ResultTypeOverride?.TryGetSequenceType()
+                      ?? ((CastResultOperator)parentQueryModel.ResultOperators.LastOrDefault(r => r is CastResultOperator))?.CastItemType
+                      ?? parentQuerySource?.ItemType;
+
+                if (parentQueryModelResultType?.GetTypeInfo().IsAssignableFrom(referencedQuerySource.ItemType.GetTypeInfo()) == true)
                 {
                     var resultSetOperators = GetSetResultOperatorSourceExpressions(parentQueryModel);
 

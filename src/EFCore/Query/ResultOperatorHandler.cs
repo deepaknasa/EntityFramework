@@ -286,7 +286,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             Func<TSource, CancellationToken, Task<TElement>> elementSelector)
             => new AsyncGroupByAsyncEnumerable<TSource, TKey, TElement>(source, keySelector, elementSelector);
 
-        private sealed class AsyncGroupByAsyncEnumerable<TSource, TKey, TElement> 
+        private sealed class AsyncGroupByAsyncEnumerable<TSource, TKey, TElement>
             : IAsyncEnumerable<IGrouping<TKey, TElement>>
         {
             private readonly IAsyncEnumerable<TSource> _source;
@@ -524,8 +524,15 @@ namespace Microsoft.EntityFrameworkCore.Query
             var source2 = entityQueryModelVisitor
                 .ReplaceClauseReferences(secondSource);
 
+            var resultType = entityQueryModelVisitor.Expression.Type.GetSequenceType();
+            var sourceType = source2.Type.GetSequenceType();
+            while (!resultType.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo()))
+            {
+                resultType = resultType.GetTypeInfo().BaseType;
+            }
+
             return Expression.Call(
-                setMethodInfo.MakeGenericMethod(entityQueryModelVisitor.Expression.Type.GetSequenceType()),
+                setMethodInfo.MakeGenericMethod(resultType),
                 entityQueryModelVisitor.Expression,
                 source2);
         }
