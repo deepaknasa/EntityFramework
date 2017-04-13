@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Relational.Tests.TestUtilities.FakeProvider;
 using Microsoft.EntityFrameworkCore.Specification.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.EntityFrameworkCore.Relational.Tests.TestUtilities
 {
@@ -35,7 +36,7 @@ namespace Microsoft.EntityFrameworkCore.Relational.Tests.TestUtilities
         private const string FileLineEnding = @"
 ";
 
-        public static void AssertBaseline(params string[] expected)
+        public static void AssertBaseline(ITestOutputHelper testOutputHelper, bool assertOrder, params string[] expected)
         {
             var sqlStatements = TestSqlLoggerFactory.SqlStatements
                 .Select(sql => sql.Replace(Environment.NewLine, FileLineEnding))
@@ -43,17 +44,26 @@ namespace Microsoft.EntityFrameworkCore.Relational.Tests.TestUtilities
 
             try
             {
-                // Contains match because of ordering differences between .NET framework & Core
-                foreach (var expectedFragment in expected)
+                if (assertOrder)
                 {
-                    Assert.Contains(expectedFragment, sqlStatements);
+                    for (var i = 0; i < expected.Length; i++)
+                    {
+                        Assert.Equal(expected[i], sqlStatements[i]);
+                    }
+                }
+                else
+                {
+                    foreach (var expectedFragment in expected)
+                    {
+                        Assert.Contains(expectedFragment, sqlStatements);
+                    }
                 }
             }
             catch
             {
                 var methodCallLine = Environment.StackTrace.Split(
                         new[] { Environment.NewLine },
-                        StringSplitOptions.RemoveEmptyEntries)[4]
+                        StringSplitOptions.RemoveEmptyEntries)[3]
                     .Substring(6);
                 var testName = methodCallLine.Substring(0, methodCallLine.IndexOf(')') + 1);
                 var lineIndex = methodCallLine.LastIndexOf("line", StringComparison.Ordinal);
@@ -66,18 +76,21 @@ namespace Microsoft.EntityFrameworkCore.Relational.Tests.TestUtilities
                                   currentDirectory.LastIndexOf("\\test\\", StringComparison.Ordinal) + 1)
                               + "QueryBaseline.cs";
 
-                var contents = $@"{testName + " : " + lineNumber}
-            AssertSql(
+                var testInfo = $"{testName + " : " + lineNumber}" + FileLineEnding;
+
+                var newBaseLine = $@"            AssertSql(
                 {string.Join("," + indent + "//" + indent, sqlStatements.Take(9).Select(sql => "@\"" + sql.Replace("\"","\"\"") + "\""))});
 
 ";
 
                 if (sqlStatements.Count > 9)
                 {
-                    contents += "Output truncated.";
+                    newBaseLine += "Output truncated.";
                 }
 
-                contents += FileLineEnding + FileLineEnding;
+                testOutputHelper.WriteLine(newBaseLine);
+
+                var contents = testInfo + newBaseLine + FileLineEnding + FileLineEnding;
 
                 File.AppendAllText(logFile, contents);
 

@@ -11,9 +11,12 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests
 {
     public class FromSqlQuerySqlServerTest : FromSqlQueryTestBase<NorthwindQuerySqlServerFixture>
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
         public FromSqlQuerySqlServerTest(NorthwindQuerySqlServerFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
+            _testOutputHelper = testOutputHelper;
             //TestSqlLoggerFactory.CaptureOutput(testOutputHelper);
         }
 
@@ -454,9 +457,14 @@ ORDER BY [t].[OrderID]");
                 Value = value
             };
 
-        private void AssertSql(params string [] expected)
+        private void AssertSql(params string[] expected)
         {
-            RelationalTestHelpers.AssertBaseline(expected);
+            RelationalTestHelpers.AssertBaseline(_testOutputHelper, /*assertOrder:*/ true, expected);
+        }
+
+        private void AssertContainsSql(params string[] expected)
+        {
+            RelationalTestHelpers.AssertBaseline(_testOutputHelper, /*assertOrder:*/ false, expected);
         }
     }
 }
